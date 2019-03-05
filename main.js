@@ -12,6 +12,8 @@ var this_ = this;
 var now_filter = 0; //0 : not filter 1: order filter
 //var filter_name = "ALL";
 
+
+
 var app = new Vue({
     el: '#app',
     created: function() {
@@ -47,6 +49,9 @@ var app = new Vue({
         category_list : [],
         now_category : "ALL",
         db:null,
+        showModal: false,
+        input_category:"aa",
+        no_filter_wikidatas:[],
         }
     },
   
@@ -61,19 +66,6 @@ var app = new Vue({
                 });
             });
         },
-        change_order_now: function(collection_id){
-          //参考に
-          let ref = this.db.collection("order_list").doc(collection_id);
-          ref.get().then(function(doc){
-              console.log(doc.data());
-              console.log(doc.data().Now_Order);
-              if(doc.data().Now_Order == true){
-                ref.update({Now_Order:false});
-              }else if(doc.data().Now_Order == false){
-                ref.update({Now_Order:true});
-              }
-          });
-        },
         change_get_now: function(collection_id){    
           let ref = this.db.collection("order_list").doc(collection_id);
           ref.get().then(function(doc){
@@ -84,14 +76,6 @@ var app = new Vue({
           
         },
         delete_data: function(collection_id){
-        },
-        get_date: function(dt){
-            console.log(dt);
-            let y = dt.getFullYear();
-            let m = ("00" + (dt.getMonth()+1)).slice(-2);
-            let d = ("00" + dt.getDate()).slice(-2);
-            let result = y + "/" + m + "/" + d;
-            return result;
         },
         update_data : function(){
             let categorys_cp2 = [];
@@ -109,7 +93,7 @@ var app = new Vue({
         },
         filter_data : function(filter_tag,filter_name){
             let wikidatas_cp2 = [];
-            let test_list = [];
+            let wikidatas_cp3 = [];
             let filter_DB;
             console.log(filter_name);
             switch(filter_tag){
@@ -117,52 +101,76 @@ var app = new Vue({
                 filter_DB = this.db.collection("wikidata");
                 break;
               case 1://今回注文予定フィルタ
-                filter_DB = this.db.collection("wikidata").where("ategory", "==", filter_name);
+                filter_DB = this.db.collection("wikidata").where("category", "==", filter_name);
                 break;
             }
-            //this.db.collection("order_list").where("Now_Order", "==", true).get().then(function(querySnapshot) {
             filter_DB.get().then(function(querySnapshot) {
                 querySnapshot.forEach(function(doc) {
-                    // doc.data() is never undefined for query doc snapshots
-                    //console.log(doc.id, " => ", doc.data());
-                    //var dict_data = doc.data();
                     let copyObj2 = {};
                     let copyid2 = doc.id;
+                    console.log(doc.data())
                     Object.assign(copyObj2 , doc.data());
-                    //console.log(copyObj);
-                    test_list.push(String(copyObj2.category));
+                    console.log(copyObj2);
                     copyObj2.id = copyid2;
                     wikidatas_cp2.push(copyObj2);
-                    //console.log("update data");
                 });
             });
-            //this.category_list = Array.from(new Set(categorys_cp2));
-            console.log("cp2");
-            //console.log(categorys_cp2);
-            //let set_data2 = new Set(categorys_cp2);
-            //this.category_list = categorys_cp2;
-            //console.log(this.wikidatas[0]);
-            console.log(test_list);
-            let categorys_cp2 =[];
-            this.wikidatas.forEach(i => {
-                console.log(i.category);
-                //categorys_cp2.push(i.category);
-                this_.category_list.push(i.category);
-            });
-            console.log(categorys_cp2);
             this.wikidatas=wikidatas_cp2;
-            this.category_list = [... new Set(this.category_list)];//[... new Set(categorys_cp2)];
             now_filter = filter_tag;
-            console.log(filter_name);
+
             this.now_category = filter_name;
+            this.db.collection("wikidata").get().then(function(querySnapshot) {
+                querySnapshot.forEach(function(doc) {
+                    let copyObj3 = {};
+                    let copyid3 = doc.id;
+                    console.log(doc.data())
+                    Object.assign(copyObj3 , doc.data());
+                    console.log(copyObj3);
+                    copyObj3.id = copyid3;
+                    wikidatas_cp3.push(copyObj3);
+                });
+                this_.update_category();
+            });
+            this.no_filter_wikidatas = wikidatas_cp3;
         },
-        created: function(){
-        // GET request
-        axios.get("https://agate-postage.glitch.me/exel_generate")
-        .then(response => {
-          console.log("GET!!");
-          document.getElementById("download_excel").click();
-        });
+        update_category: function(){
+            console.log("aaa")
+            let categorys_cp2 = this.category_list.slice();
+
+            this.no_filter_wikidatas.forEach(i => {
+                console.log(i.category);
+                categorys_cp2.push(i.category);
+            });
+            this.category_list = [... new Set(categorys_cp2)];
+        }
+    }
+})
+
+console.log(app);
+Vue.component('modal', {
+    template: '#modal-template',
+    data:function(){
+        return {
+            input_category:"",
+            input_url:"",
+            data:app._data.category_list,//appのデータを参照
+        }
+    },
+    methods: {
+
+        add_data: function(){
+            console.log("add data");
+            if(this.input_category != "" && this.input_url != ""){
+                app._data.db.collection("wikidata").add({
+                    "category": this.input_category,
+                    "url" : this.input_url,
+                });
+                this.input_category ="";
+                this.input_url="";
+                this.$emit('close');
+            }else{
+                alert("すべてのフォームを埋めてください");
+            }
         },
     }
 })

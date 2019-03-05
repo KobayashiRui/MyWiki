@@ -1,30 +1,21 @@
 <!DOCTYPE HTML>
 <html lang="ja">
     <head>
-        <title>MyWiki</title>
+        <title>Voxels</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        <style>
-            [v-cloak]{
-                display:none;
-            }
-        </style>
     </head>
     <body>
-
         <h1>MyWiki</h1>
         <div id="app">
-            <h2>カテゴリーリスト</h2>
-            <a href="#" v-on:click="filter_data(0,'ALL')" v-cloak>すべて表示</a>
-            <div v-for="category_data in category_list">
-                <a href="#" v-on:click="filter_data(1,category_data)" v-cloak>{{category_data}}</a>
+            
+            <div v-for="category_data in categorys">
+                <h3><a v-bind:href="'./' + category_data.category + '/index.html'">{{category_data.category}}</a></h3>
             </div>
-            <h2 v-cloak>記事リスト [{{now_category}}]</h2>
-            <div v-for="wikidata in wikidatas">
-                <a v-bind:href="'./'+ wikidata.category +'/'+  wikidata.url + '/index.html'" v-cloak>{{wikidata.url}}</a>
-            </div>
+
+            <button>カテゴリーの追加</button>
         </div>
         <script src="https://www.gstatic.com/firebasejs/5.8.5/firebase.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>

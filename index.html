@@ -56,13 +56,8 @@
                             </div>
                             <p>現在あるカテゴリー</p>
                             <p><div v-for="d in data">・{{d}} </div></p>
+                            <hr>
                             <button v-on:click="add_data();" class="btn btn-outline-success" >Add</button>
-                          </slot>
-                        </div>
-              
-                        <div class="modal-footer">
-                          <slot name="footer">
-                            <!--default footer-->
                             <button class="modal-default-button btn btn-outline-dark" @click="$emit('close')">close</button>
                           </slot>
                         </div>
